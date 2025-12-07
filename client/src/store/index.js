@@ -352,6 +352,26 @@ function GlobalStoreContextProvider(props) {
         store.hideModals();
         
     }
+
+    store.copyPlaylist = function (id) {
+        async function asyncCopyPlaylist(id) {
+            try {
+                const response = await storeRequestSender.copyPlaylist(id)
+
+                const data = response.data || response
+
+                if (data.success) {
+                    store.loadIdNamePairs()
+                } else {
+                    console.log("FAILED TO COPY PLAYLIST", data.errorMessage)
+                }
+            } catch (err) {
+                console.error("Error copying playlist", err)
+            }
+        }
+        asyncCopyPlaylist(id)
+    }
+
     // THIS FUNCTION SHOWS THE MODAL FOR PROMPTING THE USER
     // TO SEE IF THEY REALLY WANT TO DELETE THE LIST
 

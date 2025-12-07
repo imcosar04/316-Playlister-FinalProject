@@ -41,6 +41,12 @@ export function deletePlaylistById(id) {
   return jsonFetch(`${BASE}/playlist/${id}`, { method: 'DELETE' });
 }
 
+export function copyPlaylist(id) {
+  return jsonFetch(`${BASE}/playlist/${id}/copy`, {
+    method: 'POST',
+  });
+}
+
 /** GET Playlist by ID*/
 export function getPlaylistById(id) {
   return jsonFetch(`${BASE}/playlist/${id}`, { method: 'GET' });
@@ -61,6 +67,7 @@ export function updatePlaylistById(id, playlist) {
 const apis = {
     createPlaylist,
     deletePlaylistById,
+    copyPlaylist,
     getPlaylistById,
     getPlaylistPairs,
     updatePlaylistById

@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react'
 import { GlobalStoreContext } from '../store'
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 import Box from '@mui/material/Box';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -47,6 +48,12 @@ function PlaylistCard(props) {
         setEditActive(newActive);
     }
 
+    async function handleCopyList(event, id) {
+        event.stopPropagation();
+        console.log("COPY CLICKED for", id);
+        store.copyPlaylist(id);
+    }
+
     async function handleDeleteList(event, id) {
         event.stopPropagation();
         //let _id = event.target.id;
@@ -77,6 +84,14 @@ function PlaylistCard(props) {
             }}
         >
             <Box sx={{ p: 1, flexGrow: 1 }}>{idNamePair.name}</Box>
+            <Box sx={{ p: 1 }}>
+                <IconButton
+                    onClick={(event) => handleCopyList(event, idNamePair._id)}
+                    aria-label='copy'
+                >
+                    <FileCopyIcon style={{fontSize:'48pt'}} />
+                </IconButton>
+            </Box>
             <Box sx={{ p: 1 }}>
                 <IconButton onClick={handleToggleEdit} aria-label='edit'>
                     <EditIcon style={{fontSize:'48pt'}} />

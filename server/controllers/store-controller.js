@@ -123,6 +123,84 @@ updatePlaylist = async (req, res) => {
   }
 }
 
+copyPlaylist = async (req, res) => {
+  console.log("copyPlaylist controller, id:", req.params.id, "userId:", req.userId)
+
+  // Auth check (same pattern as the others)
+  if (auth.verifyUser(req) === null) {
+    return res.status(400).json({ errorMessage: 'UNAUTHORIZED' })
+  }
+
+  try {
+    // Load original playlist
+    const original = await db.getPlaylistById(req.params.id)
+    if (!original) {
+      return res
+        .status(404)
+        .json({ success: false, errorMessage: 'Original playlist not found' })
+    }
+
+    // Ownership check: only owner can copy
+    const owner = await db.getUserByEmail(original.ownerEmail)
+    if (!owner || String(owner._id || owner.id) !== String(req.userId)) {
+      return res
+        .status(400)
+        .json({ success: false, errorMessage: 'authentication error' })
+    }
+
+    const baseName = original.name || 'Untitled'
+    let newName = `${baseName} (copy)`
+
+    try {
+      const pairs = await db.getPlaylistPairs({ ownerEmail: original.ownerEmail }) || []
+      const existingNames = new Set(pairs.map(p => p.name))
+
+      let copyIndex = 1
+      let candidate = newName
+      while (existingNames.has(candidate)) {
+        copyIndex += 1
+        candidate = `${baseName} (copy ${copyIndex})`
+      }
+      newName = candidate
+    } catch (nameErr) {
+      console.warn('copyPlaylist: could not ensure unique name, using default', nameErr)
+    }
+
+    const newPlaylistData = {
+      name: newName,
+      ownerEmail: original.ownerEmail,
+      songs: (original.songs || []).map(s => ({
+        title: s.title,
+        artist: s.artist,
+        year: s.year,
+        youTubeId: s.youTubeId,
+      })),
+    }
+
+    const created = await db.createPlaylist(newPlaylistData)
+
+    if (db.appendUserPlaylist) {
+      try {
+        await db.appendUserPlaylist(req.userId, created._id || created.id)
+      } catch (appendErr) {
+        console.warn('copyPlaylist: appendUserPlaylist failed, continuing anyway', appendErr)
+      }
+    }
+
+    // Success response
+    return res.status(201).json({
+      success: true,
+      playlist: created,
+    })
+  } catch (err) {
+    console.error('Error in copyPlaylist:', err)
+    return res
+      .status(400)
+      .json({ success: false, errorMessage: 'Playlist not copied!' })
+  }
+}
+
+
 module.exports = {
   createPlaylist,
   deletePlaylist,
@@ -130,4 +208,5 @@ module.exports = {
   getPlaylistPairs,
   getPlaylists,
   updatePlaylist,
+  copyPlaylist,
 }

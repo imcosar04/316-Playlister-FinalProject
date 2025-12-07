@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react'
 import { GlobalStoreContext } from '../store'
 import FileCopyIcon from '@mui/icons-material/FileCopy';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import Box from '@mui/material/Box';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -90,6 +91,17 @@ function PlaylistCard(props) {
                     aria-label='copy'
                 >
                     <FileCopyIcon style={{fontSize:'48pt'}} />
+                </IconButton>
+            </Box>
+            <Box sx={{ p: 1 }}>
+                <IconButton
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        store.startPlayingPlaylist(idNamePair._id);
+                    }}
+                    aria-label='play'
+                >
+                    <PlayArrowIcon style={{ fontSize:'48pt' }} />
                 </IconButton>
             </Box>
             <Box sx={{ p: 1 }}>

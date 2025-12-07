@@ -31,7 +31,10 @@ export const GlobalStoreActionType = {
     SET_LIST_NAME_EDIT_ACTIVE: "SET_LIST_NAME_EDIT_ACTIVE",
     EDIT_SONG: "EDIT_SONG",
     REMOVE_SONG: "REMOVE_SONG",
-    HIDE_MODALS: "HIDE_MODALS"
+    HIDE_MODALS: "HIDE_MODALS",
+    PLAY_PLAYLIST: "PLAY_PLAYLIST",
+    SET_PLAYING_INDEX: "SET_PLAYING_INDEX",
+    STOP_PLAYING: "STOP_PLAYING"
 }
 
 // WE'LL NEED THIS TO PROCESS TRANSACTIONS
@@ -41,7 +44,8 @@ const CurrentModal = {
     NONE : "NONE",
     DELETE_LIST : "DELETE_LIST",
     EDIT_SONG : "EDIT_SONG",
-    ERROR : "ERROR"
+    ERROR : "ERROR",
+    PLAY_PLAYLIST : "PLAY_PLAYLIST"
 }
 
 // WITH THIS WE'RE MAKING OUR GLOBAL DATA STORE
@@ -57,7 +61,9 @@ function GlobalStoreContextProvider(props) {
         newListCounter: 0,
         listNameActive: false,
         listIdMarkedForDeletion: null,
-        listMarkedForDeletion: null
+        listMarkedForDeletion: null,
+        playingList: null,
+        playingIndex: -1
     });
     const history = useHistory();
 
@@ -75,6 +81,7 @@ function GlobalStoreContextProvider(props) {
             // LIST UPDATE OF ITS NAME
             case GlobalStoreActionType.CHANGE_LIST_NAME: {
                 return setStore({
+                    ...store,
                     currentModal : CurrentModal.NONE,
                     idNamePairs: payload.idNamePairs,
                     currentList: payload.playlist,
@@ -89,6 +96,7 @@ function GlobalStoreContextProvider(props) {
             // STOP EDITING THE CURRENT LIST
             case GlobalStoreActionType.CLOSE_CURRENT_LIST: {
                 return setStore({
+                    ...store,
                     currentModal : CurrentModal.NONE,
                     idNamePairs: store.idNamePairs,
                     currentList: null,
@@ -103,6 +111,7 @@ function GlobalStoreContextProvider(props) {
             // CREATE A NEW LIST
             case GlobalStoreActionType.CREATE_NEW_LIST: {                
                 return setStore({
+                    ...store,
                     currentModal : CurrentModal.NONE,
                     idNamePairs: store.idNamePairs,
                     currentList: payload,
@@ -117,6 +126,7 @@ function GlobalStoreContextProvider(props) {
             // GET ALL THE LISTS SO WE CAN PRESENT THEM
             case GlobalStoreActionType.LOAD_ID_NAME_PAIRS: {
                 return setStore({
+                    ...store,
                     currentModal : CurrentModal.NONE,
                     idNamePairs: payload,
                     currentList: null,
@@ -131,6 +141,7 @@ function GlobalStoreContextProvider(props) {
             // PREPARE TO DELETE A LIST
             case GlobalStoreActionType.MARK_LIST_FOR_DELETION: {
                 return setStore({
+                    ...store,
                     currentModal : CurrentModal.DELETE_LIST,
                     idNamePairs: store.idNamePairs,
                     currentList: null,
@@ -145,6 +156,7 @@ function GlobalStoreContextProvider(props) {
             // UPDATE A LIST
             case GlobalStoreActionType.SET_CURRENT_LIST: {
                 return setStore({
+                    ...store,
                     currentModal : CurrentModal.NONE,
                     idNamePairs: store.idNamePairs,
                     currentList: payload,
@@ -159,6 +171,7 @@ function GlobalStoreContextProvider(props) {
             // START EDITING A LIST NAME
             case GlobalStoreActionType.SET_LIST_NAME_EDIT_ACTIVE: {
                 return setStore({
+                    ...store,
                     currentModal : CurrentModal.NONE,
                     idNamePairs: store.idNamePairs,
                     currentList: payload,
@@ -173,6 +186,7 @@ function GlobalStoreContextProvider(props) {
             // 
             case GlobalStoreActionType.EDIT_SONG: {
                 return setStore({
+                    ...store,
                     currentModal : CurrentModal.EDIT_SONG,
                     idNamePairs: store.idNamePairs,
                     currentList: store.currentList,
@@ -186,6 +200,7 @@ function GlobalStoreContextProvider(props) {
             }
             case GlobalStoreActionType.REMOVE_SONG: {
                 return setStore({
+                    ...store,
                     currentModal : CurrentModal.NONE,
                     idNamePairs: store.idNamePairs,
                     currentList: store.currentList,
@@ -199,6 +214,7 @@ function GlobalStoreContextProvider(props) {
             }
             case GlobalStoreActionType.HIDE_MODALS: {
                 return setStore({
+                    ...store,
                     currentModal : CurrentModal.NONE,
                     idNamePairs: store.idNamePairs,
                     currentList: store.currentList,
@@ -210,6 +226,29 @@ function GlobalStoreContextProvider(props) {
                     listMarkedForDeletion: null
                 });
             }
+
+            case GlobalStoreActionType.PLAY_PLAYLIST: {
+                return setStore({
+                    ...store,
+                    currentModal: CurrentModal.NONE,
+                    playingList: payload.playlist,
+                    playingIndex: payload.index
+                });
+            }
+            case GlobalStoreActionType.SET_PLAYING_INDEX: {
+                return setStore({
+                    ...store,
+                    playingIndex: payload
+                });
+            }
+            case GlobalStoreActionType.STOP_PLAYING: {
+                return setStore({
+                    ...store,
+                    playingList: null,
+                    playingIndex: -1
+                });
+            }
+
             default:
                 return store;
         }
@@ -391,11 +430,31 @@ function GlobalStoreContextProvider(props) {
     store.isDeleteListModalOpen = () => {
         return store.currentModal === CurrentModal.DELETE_LIST;
     }
+    store.isPlayPlaylistModalOpen = () => {
+        return store.currentModal === CurrentModal.PLAY_PLAYLIST;
+    };
+
     store.isEditSongModalOpen = () => {
         return store.currentModal === CurrentModal.EDIT_SONG;
     }
     store.isErrorModalOpen = () => {
         return store.currentModal === CurrentModal.ERROR;
+    }
+
+    store.showPlayPlaylistModal = function (id) {
+        async function asyncShowPlayPlaylistModal(id) {
+            const response = await storeRequestSender.getPlaylistById(id);
+            if (response.data && response.data.success) {
+                const playlist = response.data.playlist;
+                storeReducer({
+                    type: GlobalStoreActionType.PLAY_PLAYLIST,
+                    payload: playlist
+                });
+            } else {
+                console.log("FAILED TO LOAD PLAYLIST FOR PLAY MODAL");
+            }
+        }
+        asyncShowPlayPlaylistModal(id);
     }
 
     // THE FOLLOWING 8 FUNCTIONS ARE FOR COORDINATING THE UPDATING
@@ -421,6 +480,58 @@ function GlobalStoreContextProvider(props) {
         asyncSetCurrentList(id);
     }
 
+    // START PLAYING A PLAYLIST FROM THE FIRST SONG
+    store.startPlayingPlaylist = function (id) {
+        async function asyncStart(id) {
+            const response = await storeRequestSender.getPlaylistById(id);
+            if (response.data && response.data.success) {
+                const playlist = response.data.playlist;
+                if (!playlist.songs || playlist.songs.length === 0) {
+                    console.log("No songs to play");
+                    return;
+                }
+                storeReducer({
+                    type: GlobalStoreActionType.PLAY_PLAYLIST,
+                    payload: { playlist, index: 0 }
+                });
+            }
+        }
+        asyncStart(id);
+    }
+
+    // GO TO NEXT SONG (WRAPS AROUND)
+    store.playNextSong = function () {
+        const list = store.playingList;
+        if (!list || !list.songs || list.songs.length === 0) return;
+
+        const nextIndex = (store.playingIndex + 1) % list.songs.length;
+        storeReducer({
+            type: GlobalStoreActionType.SET_PLAYING_INDEX,
+            payload: nextIndex
+        });
+    }
+
+    // GO TO PREVIOUS SONG (WRAPS AROUND)
+    store.playPreviousSong = function () {
+        const list = store.playingList;
+        if (!list || !list.songs || list.songs.length === 0) return;
+
+        const len = list.songs.length;
+        const prevIndex = (store.playingIndex - 1 + len) % len;
+        storeReducer({
+            type: GlobalStoreActionType.SET_PLAYING_INDEX,
+            payload: prevIndex
+        });
+    }
+
+    // STOP PLAYING – clears the mini player
+    store.stopPlaying = function () {
+        storeReducer({
+            type: GlobalStoreActionType.STOP_PLAYING,
+            payload: {}
+        });
+    }
+    
     store.getPlaylistSize = function() {
         return store.currentList.songs.length;
     }

@@ -71,7 +71,7 @@ body {
 
 #edit-toolbar {
   background-color: transparent;
-  transform: translate(41%, 0%);
+  transform: translate(31%, 0%);
 }
 
 .playlister-button,
@@ -95,32 +95,38 @@ body {
 }
 
 #playlister-list-selector {
-  position: absolute;
-  left: 0%;
-  top: 10%;
+  position: relative;
+  left: 0;
+  top: 0;
   width: 100%;
-  height: 80%;
+  height: 100%;
   background-color: var(--swatch-primary);
-  max-height: 100px;
-  overflow: scroll;
+  overflow-y: auto;
 }
 
+
 #playlister-workspace {
-  position: absolute;
-  left: 0%;
-  top: 10%;
+  position: relative;
+  left: 0;
+  top: 0;
   width: 100%;
-  height: 80%;
+  height: 100%;
   background-color: var(--swatch-accent);
-  max-height: 100px;
-  overflow: scroll;
+  overflow-y: auto;
+}
+
+
+#playlist-selector {
+  width: 100%;
+  height: 100%;
+  padding-top: 8px; 
 }
 
 #playlister-statusbar {
-  position: absolute;
-  left: 0%;
-  bottom: 0%;            
-  width: 100%;
+  position: fixed;      
+  left: 10%;             
+  bottom: 5%;            
+  width: 80%;            
   height: 10%;
   background-color: white;
   display: flex;
@@ -132,37 +138,31 @@ body {
 }
 
 
+
 #list-selector-heading {
-  position: absolute;
-  left: 0%;
-  top: 0%;
-  padding-left: 25%;
-  width: 50%;
-  height: 10%;
+  width: 100%;
   text-align: center;
   font-size: 24pt;
   font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin: 0;         
+  padding-top: 4px;    
+  margin-bottom: 16px; 
 }
+
+
+
 
 #add-list-button {
   float: left;
 }
 
 #list-selector-list {
-  position: absolute;
-  left: 0%;
-  top: 10%;
   width: 100%;
-  height: 80%;
+  height: calc(100% - 80px); 
   display: flex;
   flex-direction: column;
-  overflow: scroll;
+  overflow-y: auto;
 }
-
-
 
 .list-card,
 .selected-list-card,
@@ -290,11 +290,13 @@ input {
   opacity: 0;
   transition: all 0.35s ease-in;
   font-family: var(--font-primary);
+  pointer-events: none;
 }
 
 .modal.is-visible {
   visibility: visible;
   opacity: 1;
+  pointer-events: auto; 
 }
 
 .modal-root {

@@ -97,7 +97,7 @@ export default function AppBanner() {
 
     return (
         <Box sx={{flexGrow: 1}}>
-            <AppBar position="static">
+            <AppBar position="relative">
                 <Toolbar>
                     <Typography                        
                         variant="h4"
@@ -105,10 +105,37 @@ export default function AppBanner() {
                         component="div"
                         sx={{ display: { xs: 'none', sm: 'block' } }}                        
                     >
-                        <Link onClick={handleHouseClick} style={{ textDecoration: 'none', color: 'white' }} to='/'>⌂</Link>
+                        <Link
+                            onClick={handleHouseClick}
+                            style={{ textDecoration: 'none', color: 'white' }}
+                            to='/'
+                        >
+                            ⌂
+                        </Link>
                     </Typography>
+
+                    <Typography
+                        variant="h6"
+                        noWrap
+                        component="div"
+                        sx={{ ml: 3, display: { xs: 'none', sm: 'block' } }}
+                    >
+                        <Link
+                            style={{
+                                textDecoration: 'none',
+                                color: 'pink',
+                                pointerEvents: 'auto',
+                                zIndex: 10000
+                            }}
+                            to="/songs"
+                        >
+                            Songs Catalog
+                        </Link>
+                    </Typography>
+
                     <Box sx={{ flexGrow: 1 }}>{editToolbar}</Box>
                     <Box sx={{ height: "90px", display: { xs: 'none', md: 'flex' } }}>
+
                         <IconButton
                             size="large"
                             edge="end"
